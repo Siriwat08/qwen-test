@@ -1,0 +1,28 @@
+# 🏷️ Auto Labeler Config
+# ใช้กับ actions/labeler@v6 ใน workflow 03-pr-validation.yml
+#
+# หมายเหตุ: actions/labeler@v6 รองรับเฉพาะ changed-files rules
+# Title-based labels (refactor, performance, chore, bug-by-title, etc.)
+# จัดการโดย actions/github-script@v7 step ใน 03-pr-validation.yml แล้ว
+
+feature:
+  - changed-files:
+      - any-glob-to-any-file: 'src/**/*'
+
+bug:
+  - changed-files:
+      - any-glob-to-any-file: 'src/**/*'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: 'docs/**/*'
+      - any-glob-to-any-file: '*.md'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file: 'appsscript.json'
+
+breaking-change:
+  - changed-files:
+      - any-glob-to-any-file: 'src/O_core_system/01_Config.gs'
+      - any-glob-to-any-file: 'src/O_core_system/02_Schema.gs'

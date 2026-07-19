@@ -1,0 +1,67 @@
+# CodeQL — Static security analysis โดย GitHub
+# ตรวจหา security vulnerabilities ในโค้ดอัตโนมัติ
+# https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
+#
+# หมายเหตุ: Apps Script ใช้ .gs (ไม่ใช่ .js) — CodeQL ไม่รู้จัก .gs โดย default
+# วิธีแก้: เพิ่ม step ที่ copy .gs → .js ก่อน CodeQL สแกน
+
+name: "🔒 CodeQL Security Analysis"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # รันทุกวันจันทร์ 08:00 ICT (Asia/Bangkok)
+    - cron: '0 01 * * 1'  # UTC 01:00 = ICT 08:00
+
+jobs:
+  analyze:
+    name: 🔍 Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript']
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📋 Prepare .gs files for CodeQL
+        # Apps Script ใช้ .gs ซึ่ง CodeQL ไม่รู้จัก — copy เป็น .js ก่อนสแกน
+        run: |
+          echo "=== Copying .gs files to .js for CodeQL analysis ==="
+          find src/ -name "*.gs" -type f | while read gsfile; do
+            jsfile="${gsfile%.gs}.js"
+            cp "$gsfile" "$jsfile"
+            echo "  ✅ $gsfile → $jsfile"
+          done
+          echo "=== Done. .js files created: $(find src/ -name '*.js' | wc -l) ==="
+
+      - name: 🔧 Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          config-file: .github/codeql-config.yml
+
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: 🔍 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
+
+      - name: 🧹 Cleanup .js files
+        if: always()
+        run: |
+          find src/ -name "*.js" -type f -delete
+          echo "Cleaned up temporary .js files"
