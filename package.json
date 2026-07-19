@@ -1,0 +1,46 @@
+{
+  "name": "lmds-phaopanya-scg",
+  "version": "6.0.069",
+  "description": "LMDS V6.0 — Logistics Master Data System for SCG/JWD logistics pipeline. Google Apps Script Web App + Master Data Management with automated matching engine.",
+  "private": true,
+  "scripts": {
+    "lint": "eslint src/ --ext .gs,.js,.html",
+    "lint:fix": "eslint src/ --ext .gs,.js,.html --fix",
+    "format": "prettier --write \"src/**/*.{gs,js,html,css}\"",
+    "format:check": "prettier --check \"src/**/*.{gs,js,html,css}\"",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "deploy": "clasp deploy --description \"LMDS V6.0 auto-deploy\"",
+    "open": "clasp open",
+    "status": "clasp status"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0",
+    "@types/google-apps-script": "^1.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-googleappsscript": "^1.0.5",
+    "eslint-plugin-html": "^8.1.4",
+    "prettier": "^3.9.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Siriwat08/phaopanya-scg.git"
+  },
+  "keywords": [
+    "google-apps-script",
+    "logistics",
+    "scg",
+    "jwd",
+    "master-data-management",
+    "match-engine",
+    "dashboard"
+  ],
+  "author": "Siriwat08",
+  "license": "MIT",
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

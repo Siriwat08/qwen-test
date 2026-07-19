@@ -1,0 +1,89 @@
+# ESLint configuration for LMDS V5.5
+# ใช้สำหรับ linting Google Apps Script (.gs) และ JavaScript files
+# https://eslint.org/docs/latest/use/configure/configuration-files
+
+root: true
+
+ignorePatterns:
+  - '**/Index.html'
+
+# ─── Plugins ───
+plugins:
+  - html # เพื่อให้ ESLint lint script blocks ใน .html files
+  - googleappsscript # [V6.0.041] GAS-specific linting — รู้จัก SpreadsheetApp, CacheService, etc.
+
+env:
+  browser: true
+  es2022: true
+
+parserOptions:
+  ecmaVersion: 2022
+  sourceType: script
+
+globals:
+  # Google Apps Script globals
+  SpreadsheetApp: readonly
+  Session: readonly
+  PropertiesService: readonly
+  CacheService: readonly
+  HtmlService: readonly
+  LockService: readonly
+  ScriptApp: readonly
+  DriveApp: readonly
+  MailApp: readonly
+  Utilities: readonly
+  Browser: readonly
+  Charts: readonly
+  ContentService: readonly
+  GmailApp: readonly
+  UrlFetchApp: readonly
+
+rules:
+  # ─── Errors (บังคับ) ───
+  no-undef: off # ปิดไว้ เพราะโปรเจกต์ GAS มีการเรียกใช้ฟังก์ชันข้ามไฟล์จำนวนมาก
+  no-unused-vars: ['warn', { 'vars': 'local', 'args': 'none' }] # ตรวจจับตัวแปรที่ไม่ได้ใช้ เฉพาะ "ภายในฟังก์ชัน" เท่านั้น
+  no-redeclare: error # ห้ามประกาศซ้ำ
+  no-console: off # อนุญาต console.log (ใช้ใน GAS)
+  no-empty: warn # เตือนถ้ามี empty block
+  no-cond-assign: error # ห้าม assign ใน condition
+  no-constant-condition: warn # เตือนถ้า condition เป็นค่าคงที่
+
+  # ─── Best Practices ───
+  no-var: error # ห้าม var — ใช้ const/let (Law 1)
+  prefer-const: warn # แนะนำ const ถ้าไม่ reassign
+  no-nested-ternary: warn # ห้าม nested ternary (SonarCloud S3358)
+  no-restricted-syntax:
+    - warn
+    - selector: 'EmptyStatement'
+      message: 'Empty statement — ลบ semicolon ที่ไม่จำเป็น'
+
+  # ─── [V6.0.027 → V6.0.057] Complexity Guards — ดัก god functions ไม่ให้แย่ลง ───
+  #   Audit finding 1.2: makeMatchDecision() = 267 บรรทัด, runTestMatchDryRun_ = 190 บรรทัด
+  #   เป้าหมาย: ดักไม่ให้ฟังก์ชันใหม่เกิน threshold โดยไม่รู้ตัว
+  #   ค่า threshold ตั้งสูงพอให้ไม่ break existing code แต่จะ warn สำหรับฟังก์ชันใหม่
+  #   ใช้ 'warn' ไม่ใช่ 'error' — ไม่ block CI แต่ทำให้ developer เห็น
+  #   [V6.0.057] ลดจาก 300 → 200 (Reviewer 2 TD-05 adjusted — 100 โหดเกินไปสำหรับ GAS,
+  #     200 เป็น compromise ที่บังคับ function ขนาดเหมาะสมโดยไม่ break existing)
+  max-lines-per-function:
+    - warn
+    - max: 200 # [V6.0.057] ลดจาก 300 → 200 (compromise — ไม่โหดเท่า 100 ที่ Reviewer 2 เสนอ)
+      skipComments: true
+      skipBlankLines: true
+      IIFEs: true
+  complexity:
+    - warn
+    - max: 30 # เหตุผล: cyclomatic complexity มาตรฐาน 10-20, ตั้ง 30 ให้ generous
+  max-params:
+    - warn
+    - max: 6 # เหตุผล: ฟังก์ชันทั่วไปใช้ 3-4 params, 6 = ขีดจำกัดบน
+
+  # ─── Style ───
+  # NOTE: indent + quotes ปิดไว้ เพราะ Prettier จัดการให้แล้ว (เลี่ยง conflict)
+  # Reference: https://prettier.io/docs/en/integrating-with-linters.html
+  semi: [warn, always] # ใส่ semicolon ทุกบรรทัด
+  no-trailing-spaces: warn # ไม่มี trailing spaces
+  eol-last: warn # ขึ้นบรรทัดใหม่ท้ายไฟล์
+
+  # ─── Disabled (ไม่เหมาะกับ GAS) ───
+  no-implicit-globals: off # GAS ใช้ global scope โดย design
+  strict: off # GAS ไม่รองรับ 'use strict' ในทุก context
